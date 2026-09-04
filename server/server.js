@@ -89,7 +89,7 @@ async function deleteFromTable(table, id) {
     }
 }
 
-console.log('✅ Supabase REST API configured with key:', SUPABASE_KEY ? 'Key present' : 'No key!');
+console.log('✅ Supabase REST API configured');
 
 // ============ Rate Limiting ============
 const requestCounts = {};
@@ -204,7 +204,9 @@ app.post('/setup-admin', async (req, res) => {
         
     } catch (error) {
         console.error('Error creating admin:', error.response?.data?.message || error.message);
-        res.status(500).json({ message: 'خطأ: ' + (error.response?.data?.message || error.message) });
+        res.status(500).json({ 
+            message: 'خطأ: ' + (error.response?.data?.message || error.message) 
+        });
     }
 });
 
