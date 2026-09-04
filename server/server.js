@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 5001;
 
 // ============ إعدادات Supabase ============
 const SUPABASE_URL = 'https://xxekphfpmymsulerprvz.supabase.co';
-const SUPABASE_KEY = 'sb_secret_pLAvjDsNimOm9K9wGjfd4Q_2RvNzX8B';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || '';
 
 // دالة جلب البيانات من جدول
 async function fetchTable(table) {
