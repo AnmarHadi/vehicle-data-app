@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 5001;
 
 // ============ إعدادات Supabase ============
 const SUPABASE_URL = 'https://xxekphfpmymsulerprvz.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4ZWtwaGZwbXltc3VsZXJwcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MjIxMjEsImV4cCI6MjEwNDA5ODEyMX0.Kn5FxD1JWghcVtA-IA-f3WGIw08CZLS_OOO9I4SIGIo';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_iKvVZAE11gXxrJ3_IRGn6g_LOhNxsNS';
 // دالة جلب البيانات من جدول
 async function fetchTable(table) {
     try {
