@@ -1,0 +1,212 @@
+/* src/App.css */
+
+/* تطبيق خط Arial على جميع العناصر */
+* {
+  font-family: 'Arial', 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+body {
+  font-family: 'Arial', 'Segoe UI', Tahoma, sans-serif !important;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6,
+p, span, div, button, input, select, textarea,
+label, a, li, td, th {
+  font-family: 'Arial', 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+}
+
+/* ============ الناف بار مع اندفاع ============ */
+.navbar {
+  background-color: #343a40;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  font-family: 'Arial', sans-serif;
+  transition: margin-right 0.3s ease;
+  position: relative;
+  z-index: 999;
+}
+
+.navbar.sidebar-open {
+  margin-right: 250px;
+}
+
+.navbar.sidebar-closed {
+  margin-right: 0;
+}
+
+/* ============ محتوى الصفحة مع اندفاع ============ */
+.page-content {
+  flex: 1;
+  padding: 20px;
+  transition: margin-right 0.3s ease;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px);
+  font-family: 'Arial', sans-serif;
+}
+
+.page-content.sidebar-open {
+  margin-right: 250px;
+}
+
+.page-content.sidebar-closed {
+  margin-right: 0;
+}
+
+/* ============ السايدبار ============ */
+.sidebar {
+  width: 250px;
+  background-color: #212529;
+  color: white;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+  font-family: 'Arial', sans-serif;
+}
+
+.sidebar.closed {
+  transform: translateX(250px);
+}
+
+.sidebar-nav {
+  padding: 20px 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12px 20px;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  border-right: 3px solid transparent;
+  font-family: 'Arial', sans-serif;
+}
+
+.sidebar-link:hover {
+  background-color: #495057;
+  color: white;
+  text-decoration: none;
+}
+
+.sidebar-link.active {
+  background-color: #007bff;
+  border-right-color: #0056b3;
+}
+
+/* ============ زر الهامبرغر ============ */
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: background-color 0.3s;
+}
+
+.hamburger-btn:hover {
+  background-color: #495057;
+  border-radius: 5px;
+}
+
+.icon-dashboard {
+  width: 100%;
+  max-width: 120px;
+  margin: 20px auto;
+  display: block;
+}
+
+/* ============ تنسيقات الجداول ============ */
+.table {
+  text-align: right;
+  font-family: 'Arial', sans-serif;
+}
+
+.table th, .table td {
+  text-align: right;
+  vertical-align: middle;
+  font-family: 'Arial', sans-serif;
+}
+
+.table thead th {
+  background-color: #343a40;
+  color: white;
+  border-color: #454d55;
+  font-family: 'Arial', sans-serif;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+/* ============ تنسيق رقم العجلة ============ */
+.plate-number {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+/* ============ تنسيقات إضافية ============ */
+.card {
+  font-family: 'Arial', sans-serif;
+}
+
+.btn {
+  font-family: 'Arial', sans-serif;
+}
+
+.form-control, .form-select {
+  font-family: 'Arial', sans-serif;
+}
+
+.modal-content {
+  font-family: 'Arial', sans-serif;
+}
+
+.alert {
+  font-family: 'Arial', sans-serif;
+}
+
+.badge {
+  font-family: 'Arial', sans-serif;
+}
+
+.progress {
+  font-family: 'Arial', sans-serif;
+}
+
+.progress-bar {
+  font-family: 'Arial', sans-serif;
+}
+
+.text-muted {
+  font-family: 'Arial', sans-serif;
+}
