@@ -693,7 +693,7 @@ if (process.env.NODE_ENV === 'production') {
     if (fs.existsSync(clientBuildPath)) {
         app.use(express.static(clientBuildPath));
         
-        app.get('*', (req, res) => {
+        app.use((req, res) => {
             const apiRoutes = [
                 '/check-admin', '/setup-admin', '/login', '/change-password',
                 '/wheel-types', '/users', '/vehicle-data', '/backup-data',
