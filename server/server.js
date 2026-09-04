@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 5001;
 
 // ============ إعدادات Supabase ============
 const SUPABASE_URL = 'https://xxekphfpmymsulerprvz.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || '';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_pLAvjDsNimOm9K9wGjfd4Q_2RvNzX8B';
 
 // دالة جلب البيانات من جدول
 async function fetchTable(table) {
@@ -36,7 +36,7 @@ async function fetchTable(table) {
         });
         return response.data;
     } catch (error) {
-        console.error(`Error fetching ${table}:`, error.message);
+        console.error(`Error fetching ${table}:`, error.response?.data?.message || error.message);
         return [];
     }
 }
@@ -53,7 +53,7 @@ async function insertToTable(table, data) {
         });
         return response.data;
     } catch (error) {
-        console.error(`Error inserting to ${table}:`, error.message);
+        console.error(`Error inserting to ${table}:`, error.response?.data?.message || error.message);
         throw error;
     }
 }
@@ -69,7 +69,7 @@ async function updateTable(table, id, data) {
             }
         });
     } catch (error) {
-        console.error(`Error updating ${table}:`, error.message);
+        console.error(`Error updating ${table}:`, error.response?.data?.message || error.message);
         throw error;
     }
 }
@@ -84,12 +84,12 @@ async function deleteFromTable(table, id) {
             }
         });
     } catch (error) {
-        console.error(`Error deleting from ${table}:`, error.message);
+        console.error(`Error deleting from ${table}:`, error.response?.data?.message || error.message);
         throw error;
     }
 }
 
-console.log('✅ Supabase REST API configured');
+console.log('✅ Supabase REST API configured with key:', SUPABASE_KEY ? 'Key present' : 'No key!');
 
 // ============ Rate Limiting ============
 const requestCounts = {};
@@ -203,8 +203,8 @@ app.post('/setup-admin', async (req, res) => {
         res.json({ success: true, message: 'تم إنشاء المدير بنجاح' });
         
     } catch (error) {
-        console.error('Error creating admin:', error);
-        res.status(500).json({ message: 'خطأ في إنشاء المدير' });
+        console.error('Error creating admin:', error.response?.data?.message || error.message);
+        res.status(500).json({ message: 'خطأ: ' + (error.response?.data?.message || error.message) });
     }
 });
 
