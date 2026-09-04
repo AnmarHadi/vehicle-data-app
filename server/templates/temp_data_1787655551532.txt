@@ -1,0 +1,2 @@
+dr_na|dr_fa|dr_gr|dr_f_g|dr_alk|allname|date_ph|dr_gove|dr_m|vehicle_no|vehicle_type|vehicle_owner
+محمد|سلام|عادل|علي|المجمعي|محمد سلام عادل علي المجمعي|2026-08-25|النجف|علية سلمان|21A97411|سكانيا|محمد

@@ -1,0 +1,14 @@
+@"
+node_modules/
+client/node_modules/
+server/node_modules/
+client/build/
+data.json
+*.log
+.DS_Store
+.env
+server/whatsapp-session/
+server/.wwebjs_cache/
+server/.wwebjs_auth/
+server/templates/test.txt
+"@ | Out-File -FilePath .gitignore -Encoding UTF8

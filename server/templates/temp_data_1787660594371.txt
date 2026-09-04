@@ -1,0 +1,2 @@
+dr_na|dr_fa|dr_gr|dr_f_g|dr_alk|allname|date_ph|dr_gove|dr_m_m|dr_n_h|dr_ner|vehicle_no|vh_cov|vehicle_type|vehicle_owner
+محمد|سلام|عادل|علي|المجمعي|محمد سلام عادل علي المجمعي|2026-08-25|28|علية سلمان|199862552255|السلام|21A97411|السليمانية|سكانيا|محمد
