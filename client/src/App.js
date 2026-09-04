@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import axios from 'axios';
+import config from './config';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -46,7 +47,7 @@ function App() {
 
   const checkAdminExists = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/check-admin');
+      const response = await axios.get(`${config.apiUrl}/check-admin`);
       setHasAdmin(response.data.hasAdmin);
     } catch (error) {
       console.error('Error checking admin:', error);
