@@ -4,6 +4,7 @@ import axios from 'axios';
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../context/AuthContext';
 import config from '../config';
 
@@ -219,7 +220,7 @@ const ViewData = () => {
     doc.save('بيانات_العجلات.pdf');
   };
 
-  const exportToSQL = async () => {
+  const exportToAccess = async () => {
     if (!canExportAccess) {
       alert('ليس لديك صلاحية التصدير');
       return;
@@ -232,58 +233,52 @@ const ViewData = () => {
     setExporting(true);
 
     try {
-      let sqlContent = '-- بيانات العجلات\n';
-      sqlContent += '-- تم التصدير: ' + new Date().toLocaleString('ar-IQ') + '\n\n';
-      sqlContent += 'CREATE TABLE IF NOT EXISTS VehicleData (\n';
-      sqlContent += '  ID INTEGER PRIMARY KEY,\n';
-      sqlContent += '  FirstName TEXT,\n';
-      sqlContent += '  FatherName TEXT,\n';
-      sqlContent += '  GrandfatherName TEXT,\n';
-      sqlContent += '  GreatGrandfatherName TEXT,\n';
-      sqlContent += '  LastName TEXT,\n';
-      sqlContent += '  MotherName TEXT,\n';
-      sqlContent += '  NationalID TEXT,\n';
-      sqlContent += '  BirthDate TEXT,\n';
-      sqlContent += '  Governorate TEXT,\n';
-      sqlContent += '  Address TEXT,\n';
-      sqlContent += '  PhoneNumber TEXT,\n';
-      sqlContent += '  PlateNumber TEXT,\n';
-      sqlContent += '  PlateGovernorate TEXT,\n';
-      sqlContent += '  WheelType TEXT,\n';
-      sqlContent += '  OwnerName TEXT\n';
-      sqlContent += ');\n\n';
+      const dataForExport = filteredData.map((item, index) => ({
+        'ت': index + 1,
+        'الاسم الأول': item.firstName || '',
+        'اسم الأب': item.fatherName || '',
+        'الجد': item.grandfatherName || '',
+        'أب الجد': item.greatGrandfatherName || '',
+        'اللقب': item.lastName || '',
+        'اسم الأم الثلاثي': item.motherName || '',
+        'رقم البطاقة': item.nationalId || '',
+        'تاريخ الولادة': item.birthDate || '',
+        'محافظة السكن': item.governorate || '',
+        'العنوان': item.address || '',
+        'رقم الهاتف': item.phoneNumber || '',
+        'رقم العجلة': formatPlateNumber(item),
+        'العائدية': item.plateGovernorate || '',
+        'نوع العجلة': item.wheelType || '',
+        'المالك': item.ownerName || ''
+      }));
 
-      filteredData.forEach((item, index) => {
-        sqlContent += `INSERT INTO VehicleData VALUES (${index + 1}, `;
-        sqlContent += `'${(item.firstName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.fatherName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.grandfatherName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.greatGrandfatherName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.lastName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.motherName || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.nationalId || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.birthDate || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.governorate || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.address || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.phoneNumber || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${formatPlateNumber(item).replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.plateGovernorate || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.wheelType || '').replace(/'/g, "''")}', `;
-        sqlContent += `'${(item.ownerName || '').replace(/'/g, "''")}'`;
-        sqlContent += ');\n';
-      });
+      const worksheet = XLSX.utils.json_to_sheet(dataForExport);
+      
+      worksheet['!cols'] = [
+        { wch: 5 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 25 }
+      ];
 
-      const blob = new Blob(['\uFEFF' + sqlContent], { type: 'text/plain;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'بيانات_العجلات.sql';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'بيانات العجلات');
 
-      alert('تم تصدير ملف SQL بنجاح! يمكنك استيراده في Access.');
+      XLSX.writeFile(workbook, 'بيانات_العجلات_للأكسس.xlsx');
+
+      alert('✅ تم تصدير الملف بنجاح!\n\n📌 للاستيراد في Access:\n1. افتح Access\n2. اضغط External Data → Excel\n3. اختر الملف الذي تم تنزيله\n4. اتبع المعالج');
     } catch (error) {
       console.error('Error:', error);
       alert('خطأ في التصدير');
@@ -395,8 +390,8 @@ const ViewData = () => {
               <Button variant="danger" className="me-2" onClick={exportToPDF}>📄 تصدير PDF</Button>
             )}
             {canExportAccess && (
-              <Button variant="info" onClick={exportToSQL} disabled={exporting}>
-                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير SQL'}
+              <Button variant="info" onClick={exportToAccess} disabled={exporting}>
+                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير Access'}
               </Button>
             )}
           </div>
