@@ -64,6 +64,7 @@ function App() {
     localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUserData(null);
+    window.location.replace('/login');
   };
 
   if (hasAdmin === null) {
