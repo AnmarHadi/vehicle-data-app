@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   
   const isAdmin = user?.role === 'admin';
   const permissions = user?.permissions || {};
@@ -23,8 +24,8 @@ const Sidebar = ({ isOpen }) => {
   const visibleItems = menuItems.filter(item => item.show);
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.location.assign('/login');
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (
