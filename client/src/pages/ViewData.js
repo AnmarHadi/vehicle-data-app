@@ -233,6 +233,27 @@ const ViewData = () => {
     setExporting(true);
 
     try {
+      // جرب تصدير Access من الخادم (يعمل فقط على Windows)
+      const response = await axios.post(
+        `${config.apiUrl}/export-to-access`,
+        { data: filteredData },
+        { responseType: 'blob', timeout: 120000 }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/octet-stream' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'filled_database.accdb');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      alert('✅ تم تصدير ملف Access بنجاح!');
+    } catch (error) {
+      // إذا فشل (على Render/Linux)، استخدم Excel
+      console.log('Access export failed, using Excel instead');
+      
       const dataForExport = filteredData.map((item, index) => ({
         'ت': index + 1,
         'الاسم الأول': item.firstName || '',
@@ -253,35 +274,11 @@ const ViewData = () => {
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(dataForExport);
-      
-      worksheet['!cols'] = [
-        { wch: 5 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 25 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 30 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 25 }
-      ];
-
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'بيانات العجلات');
-
-      XLSX.writeFile(workbook, 'بيانات_العجلات_للأكسس.xlsx');
-
-      alert('✅ تم تصدير الملف بنجاح!\n\n📌 للاستيراد في Access:\n1. افتح Access\n2. اضغط External Data → Excel\n3. اختر الملف الذي تم تنزيله\n4. اتبع المعالج');
-    } catch (error) {
-      console.error('Error:', error);
-      alert('خطأ في التصدير');
+      XLSX.writeFile(workbook, 'بيانات_العجلات.xlsx');
+      
+      alert('تم تصدير Excel (Access غير متاح على الاستضافة)');
     } finally {
       setExporting(false);
     }

@@ -9,7 +9,6 @@ const axios = require('axios');
 
 const app = express();
 
-// تحديث CORS ليقبل الطلبات من أي مصدر
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -18,13 +17,13 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 
-// استخدام متغير البيئة PORT إذا كان موجوداً (مطلوب للاستضافة)
 const PORT = process.env.PORT || 5001;
 
 // ============ إعدادات Supabase ============
-const SUPABASE_URL = 'https://xxekphfpmymsulerprvz.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || '';
-// دالة جلب البيانات من جدول
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xxekphfpmymsulerprvz.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4ZWtwaGZwbXltc3VsZXJwcnZ6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODUyMjEyMSwiZXhwIjoyMTA0MDk4MTIxfQ.ZGLLWkkij--oY4y7-Dlun8g5DoNmY0bdCNhdXSfaA-Y';
+
+// دالة جلب البيانات
 async function fetchTable(table) {
     try {
         const response = await axios.get(`${SUPABASE_URL}/rest/v1/${table}?select=*`, {
@@ -89,6 +88,7 @@ async function deleteFromTable(table, id) {
 }
 
 console.log('✅ Supabase REST API configured');
+console.log(`Platform: ${process.platform}`);
 
 // ============ Rate Limiting ============
 const requestCounts = {};
@@ -117,7 +117,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware للتسجيل
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
@@ -202,10 +201,8 @@ app.post('/setup-admin', async (req, res) => {
         res.json({ success: true, message: 'تم إنشاء المدير بنجاح' });
         
     } catch (error) {
-        console.error('Error creating admin:', error.response?.data?.message || error.message);
-        res.status(500).json({ 
-            message: 'خطأ: ' + (error.response?.data?.message || error.message) 
-        });
+        console.error('Error creating admin:', error.message);
+        res.status(500).json({ message: 'خطأ: ' + error.message });
     }
 });
 
@@ -244,7 +241,6 @@ app.post('/login', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error logging in:', error);
         res.status(500).json({ message: 'خطأ في تسجيل الدخول' });
     }
 });
@@ -530,6 +526,67 @@ app.get('/backup-data', async (req, res) => {
     }
 });
 
+// ============ تصدير Access (يعمل فقط على Windows) ============
+app.post('/export-to-access', async (req, res) => {
+    try {
+        // التحقق من نظام التشغيل
+        if (process.platform !== 'win32') {
+            return res.status(400).json({ 
+                message: 'تصدير Access يعمل فقط على Windows. استخدم Excel.' 
+            });
+        }
+
+        const { data } = req.body;
+        if (!data || data.length === 0) {
+            return res.status(400).json({ message: 'لا توجد بيانات للتصدير' });
+        }
+
+        const templatePath = path.join(__dirname, 'templates', 'empty-database.accdb');
+        const outputPath = path.join(__dirname, 'templates', `filled_${Date.now()}.accdb`);
+        const vbsPath = path.join(__dirname, 'fill-access.vbs');
+        
+        if (!fs.existsSync(templatePath)) {
+            return res.status(404).json({ message: 'ملف Access غير موجود' });
+        }
+        
+        fs.copyFileSync(templatePath, outputPath);
+        
+        const dataPath = path.join(__dirname, 'templates', `temp_${Date.now()}.txt`);
+        const headers = ['dr_na', 'dr_fa', 'dr_gr', 'dr_f_g', 'dr_alk', 'allname', 'date_ph', 'dr_gove', 'dr_m_m', 'dr_n_h', 'dr_ner', 'vehicle_no', 'vh_cov', 'vehicle_type', 'vehicle_owner'];
+        
+        const lines = data.map(item => {
+            const fullName = `${item.firstName || ''} ${item.fatherName || ''} ${item.grandfatherName || ''} ${item.greatGrandfatherName || ''} ${item.lastName || ''}`.trim();
+            return [
+                item.firstName || '', item.fatherName || '', item.grandfatherName || '',
+                item.greatGrandfatherName || '', item.lastName || '', fullName,
+                item.birthDate || '', item.governorate || '', item.motherName || '',
+                item.nationalId || '', item.address || '',
+                `${item.plateLetter || ''}${item.plateNumber || ''}`,
+                item.plateGovernorate || '', item.wheelType || '', item.ownerName || ''
+            ].join('|');
+        });
+        
+        fs.writeFileSync(dataPath, headers.join('|') + '\r\n' + lines.join('\r\n'), 'utf8');
+        
+        const command = `cscript //nologo "${vbsPath}" "${outputPath}" "${dataPath}"`;
+        
+        exec(command, { timeout: 120000 }, (error, stdout, stderr) => {
+            if (error) {
+                return res.status(500).json({ message: 'خطأ في معالجة Access' });
+            }
+            
+            res.download(outputPath, 'filled_database.accdb', (err) => {
+                setTimeout(() => {
+                    try { fs.unlinkSync(outputPath); fs.unlinkSync(dataPath); } catch (e) {}
+                }, 5000);
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ message: 'خطأ: ' + error.message });
+    }
+});
+
 // ============ تسجيل السائقين ============
 function generatePassword() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -578,15 +635,7 @@ app.post('/register-driver', async (req, res) => {
         
         const message = `🔐 كلمة المرور الخاصة بك:\n\n🔑 ${password}\n\nيرجى الحفاظ عليها.`;
         
-        try {
-            await axios.post('http://localhost:5002/send-whatsapp', {
-                phoneNumber,
-                message
-            });
-            res.json({ success: true, message: 'تم إرسال كلمة المرور عبر واتساب' });
-        } catch (e) {
-            res.json({ success: true, message: 'تم التسجيل بنجاح', password });
-        }
+        res.json({ success: true, message: 'تم التسجيل بنجاح', password });
         
     } catch (error) {
         res.status(500).json({ message: 'خطأ في التسجيل' });
@@ -609,17 +658,7 @@ app.post('/resend-password', async (req, res) => {
         
         await updateTable('users', driver.id, { password: hashedPassword });
         
-        const message = `🔐 كلمة المرور الجديدة:\n\n🔑 ${newPassword}\n\nيرجى الحفاظ عليها.`;
-        
-        try {
-            await axios.post('http://localhost:5002/send-whatsapp', {
-                phoneNumber,
-                message
-            });
-            res.json({ success: true, message: 'تم إرسال كلمة المرور الجديدة' });
-        } catch (e) {
-            res.json({ success: true, message: 'تم تحديث كلمة المرور', password: newPassword });
-        }
+        res.json({ success: true, message: 'تم تحديث كلمة المرور', password: newPassword });
         
     } catch (error) {
         res.status(500).json({ message: 'خطأ في إعادة الإرسال' });
@@ -713,6 +752,8 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
     console.log('=================================');
     console.log(`Server running on port ${PORT}`);
-    console.log('Database: Supabase REST API');
+    console.log(`Platform: ${process.platform}`);
+    console.log(`Database: Supabase REST API`);
+    console.log(`Access Export: ${process.platform === 'win32' ? 'ENABLED' : 'DISABLED'}`);
     console.log('=================================');
 });
