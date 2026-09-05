@@ -219,9 +219,9 @@ const ViewData = () => {
     doc.save('بيانات_العجلات.pdf');
   };
 
-  const exportToAccess = async () => {
+  const exportToCSV = async () => {
     if (!canExportAccess) {
-      alert('ليس لديك صلاحية تصدير Access');
+      alert('ليس لديك صلاحية التصدير');
       return;
     }
     if (filteredData.length === 0) {
@@ -232,22 +232,46 @@ const ViewData = () => {
     setExporting(true);
 
     try {
-      const response = await axios.post(
-        `${config.apiUrl}/export-to-access`,
-        { data: filteredData },
-        { responseType: 'blob', timeout: 120000 }
-      );
-
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/octet-stream' }));
+      const headers = [
+        'الاسم الأول', 'اسم الأب', 'الجد', 'أب الجد', 'اللقب',
+        'اسم الأم', 'رقم البطاقة', 'تاريخ الولادة', 'المحافظة',
+        'العنوان', 'رقم الهاتف', 'رقم العجلة', 'العائدية', 'نوع العجلة', 'المالك'
+      ];
+      
+      const rows = filteredData.map(item => [
+        item.firstName || '',
+        item.fatherName || '',
+        item.grandfatherName || '',
+        item.greatGrandfatherName || '',
+        item.lastName || '',
+        item.motherName || '',
+        item.nationalId || '',
+        item.birthDate || '',
+        item.governorate || '',
+        item.address || '',
+        item.phoneNumber || '',
+        formatPlateNumber(item),
+        item.plateGovernorate || '',
+        item.wheelType || '',
+        item.ownerName || ''
+      ]);
+      
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+      
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'empty-database.accdb');
+      link.download = 'بيانات_العجلات.csv';
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
-
-      alert('تم تصدير ملف Access بنجاح!');
+      URL.revokeObjectURL(url);
+      
+      alert('تم تصدير الملف بنجاح! يمكنك فتحه في Access أو Excel.');
     } catch (error) {
       console.error('Error:', error);
       alert('خطأ في التصدير');
@@ -359,8 +383,8 @@ const ViewData = () => {
               <Button variant="danger" className="me-2" onClick={exportToPDF}>📄 تصدير PDF</Button>
             )}
             {canExportAccess && (
-              <Button variant="info" onClick={exportToAccess} disabled={exporting}>
-                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير Access'}
+              <Button variant="info" onClick={exportToCSV} disabled={exporting}>
+                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير CSV'}
               </Button>
             )}
           </div>
