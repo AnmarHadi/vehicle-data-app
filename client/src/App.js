@@ -64,6 +64,7 @@ function App() {
     localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUserData(null);
+    window.location.href = '/login';
   };
 
   if (hasAdmin === null) {
@@ -127,13 +128,15 @@ function App() {
                       <Dashboard />
                     </MainLayout>
                   )
-                ) : (
+                ) : hasAdmin ? (
                   <Navigate to="/login" replace />
+                ) : (
+                  <Navigate to="/setup" replace />
                 )
               } 
             />
 
-            {/* بقية المسارات - فقط للمستخدمين العاديين والأدمن */}
+            {/* بقية المسارات */}
             <Route 
               path="/whatsapp-qr" 
               element={
