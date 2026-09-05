@@ -219,7 +219,7 @@ const ViewData = () => {
     doc.save('بيانات_العجلات.pdf');
   };
 
-  const exportToCSV = async () => {
+  const exportToSQL = async () => {
     if (!canExportAccess) {
       alert('ليس لديك صلاحية التصدير');
       return;
@@ -232,46 +232,58 @@ const ViewData = () => {
     setExporting(true);
 
     try {
-      const headers = [
-        'الاسم الأول', 'اسم الأب', 'الجد', 'أب الجد', 'اللقب',
-        'اسم الأم', 'رقم البطاقة', 'تاريخ الولادة', 'المحافظة',
-        'العنوان', 'رقم الهاتف', 'رقم العجلة', 'العائدية', 'نوع العجلة', 'المالك'
-      ];
-      
-      const rows = filteredData.map(item => [
-        item.firstName || '',
-        item.fatherName || '',
-        item.grandfatherName || '',
-        item.greatGrandfatherName || '',
-        item.lastName || '',
-        item.motherName || '',
-        item.nationalId || '',
-        item.birthDate || '',
-        item.governorate || '',
-        item.address || '',
-        item.phoneNumber || '',
-        formatPlateNumber(item),
-        item.plateGovernorate || '',
-        item.wheelType || '',
-        item.ownerName || ''
-      ]);
-      
-      const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-      ].join('\n');
-      
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      let sqlContent = '-- بيانات العجلات\n';
+      sqlContent += '-- تم التصدير: ' + new Date().toLocaleString('ar-IQ') + '\n\n';
+      sqlContent += 'CREATE TABLE IF NOT EXISTS VehicleData (\n';
+      sqlContent += '  ID INTEGER PRIMARY KEY,\n';
+      sqlContent += '  FirstName TEXT,\n';
+      sqlContent += '  FatherName TEXT,\n';
+      sqlContent += '  GrandfatherName TEXT,\n';
+      sqlContent += '  GreatGrandfatherName TEXT,\n';
+      sqlContent += '  LastName TEXT,\n';
+      sqlContent += '  MotherName TEXT,\n';
+      sqlContent += '  NationalID TEXT,\n';
+      sqlContent += '  BirthDate TEXT,\n';
+      sqlContent += '  Governorate TEXT,\n';
+      sqlContent += '  Address TEXT,\n';
+      sqlContent += '  PhoneNumber TEXT,\n';
+      sqlContent += '  PlateNumber TEXT,\n';
+      sqlContent += '  PlateGovernorate TEXT,\n';
+      sqlContent += '  WheelType TEXT,\n';
+      sqlContent += '  OwnerName TEXT\n';
+      sqlContent += ');\n\n';
+
+      filteredData.forEach((item, index) => {
+        sqlContent += `INSERT INTO VehicleData VALUES (${index + 1}, `;
+        sqlContent += `'${(item.firstName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.fatherName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.grandfatherName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.greatGrandfatherName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.lastName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.motherName || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.nationalId || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.birthDate || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.governorate || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.address || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.phoneNumber || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${formatPlateNumber(item).replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.plateGovernorate || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.wheelType || '').replace(/'/g, "''")}', `;
+        sqlContent += `'${(item.ownerName || '').replace(/'/g, "''")}'`;
+        sqlContent += ');\n';
+      });
+
+      const blob = new Blob(['\uFEFF' + sqlContent], { type: 'text/plain;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'بيانات_العجلات.csv';
+      link.download = 'بيانات_العجلات.sql';
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      
-      alert('تم تصدير الملف بنجاح! يمكنك فتحه في Access أو Excel.');
+
+      alert('تم تصدير ملف SQL بنجاح! يمكنك استيراده في Access.');
     } catch (error) {
       console.error('Error:', error);
       alert('خطأ في التصدير');
@@ -383,8 +395,8 @@ const ViewData = () => {
               <Button variant="danger" className="me-2" onClick={exportToPDF}>📄 تصدير PDF</Button>
             )}
             {canExportAccess && (
-              <Button variant="info" onClick={exportToCSV} disabled={exporting}>
-                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير CSV'}
+              <Button variant="info" onClick={exportToSQL} disabled={exporting}>
+                {exporting ? '⏳ جاري التصدير...' : '💾 تصدير SQL'}
               </Button>
             )}
           </div>
