@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   
   const isAdmin = user?.role === 'admin';
   const permissions = user?.permissions || {};
@@ -21,6 +22,11 @@ const Sidebar = ({ isOpen }) => {
   ];
 
   const visibleItems = menuItems.filter(item => item.show);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className={`sidebar ${isOpen ? '' : 'closed'}`} dir="rtl" style={{ textAlign: 'right' }}>
@@ -40,11 +46,7 @@ const Sidebar = ({ isOpen }) => {
         <button
           className="sidebar-link btn btn-link text-white w-100 d-flex align-items-center justify-content-start"
           style={{ textAlign: 'right' }}
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-          }}
+          onClick={handleLogout}
         >
           <span className="me-2">🚪</span>
           <span>تسجيل الخروج</span>
