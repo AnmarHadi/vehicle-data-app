@@ -24,8 +24,15 @@ const Sidebar = ({ isOpen }) => {
   const visibleItems = menuItems.filter(item => item.show);
 
   const handleLogout = () => {
+    // مسح البيانات
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // استدعاء logout من context
     logout();
-    navigate('/login');
+    // التوجيه إلى صفحة تسجيل الدخول
+    navigate('/login', { replace: true });
+    // إعادة تحميل الصفحة
+    window.location.reload();
   };
 
   return (
@@ -44,8 +51,9 @@ const Sidebar = ({ isOpen }) => {
         ))}
         <hr className="bg-light" />
         <button
+          type="button"
           className="sidebar-link btn btn-link text-white w-100 d-flex align-items-center justify-content-start"
-          style={{ textAlign: 'right' }}
+          style={{ textAlign: 'right', cursor: 'pointer', border: 'none' }}
           onClick={handleLogout}
         >
           <span className="me-2">🚪</span>
