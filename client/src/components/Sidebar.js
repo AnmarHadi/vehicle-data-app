@@ -1,11 +1,10 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   
   const isAdmin = user?.role === 'admin';
   const permissions = user?.permissions || {};
@@ -24,15 +23,8 @@ const Sidebar = ({ isOpen }) => {
   const visibleItems = menuItems.filter(item => item.show);
 
   const handleLogout = () => {
-    // مسح البيانات
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // استدعاء logout من context
-    logout();
-    // التوجيه إلى صفحة تسجيل الدخول
-    navigate('/login', { replace: true });
-    // إعادة تحميل الصفحة
-    window.location.reload();
+    localStorage.clear();
+    window.location.assign('/login');
   };
 
   return (
