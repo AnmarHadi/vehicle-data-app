@@ -64,7 +64,6 @@ function App() {
     localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUserData(null);
-    window.location.replace('/login');
   };
 
   if (hasAdmin === null) {
@@ -108,7 +107,7 @@ function App() {
             
             <Route 
               path="/login" 
-              element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} 
+              element={<Login />} 
             />
             
             {/* مسارات السائقين - بدون MainLayout */}
@@ -116,7 +115,7 @@ function App() {
             <Route path="/driver-register" element={<DriverRegister />} />
             <Route path="/driver-login" element={<DriverLogin />} />
 
-            {/* الصفحة الرئيسية - السائق يوجه لصفحته الخاصة */}
+            {/* الصفحة الرئيسية */}
             <Route 
               path="/" 
               element={
@@ -128,10 +127,8 @@ function App() {
                       <Dashboard />
                     </MainLayout>
                   )
-                ) : hasAdmin ? (
-                  <Navigate to="/login" replace />
                 ) : (
-                  <Navigate to="/setup" replace />
+                  <Navigate to="/login" replace />
                 )
               } 
             />
@@ -145,7 +142,7 @@ function App() {
                     <WhatsAppQR />
                   </MainLayout>
                 ) : (
-                  <Navigate to="/" replace />
+                  <Navigate to="/login" replace />
                 )
               } 
             />
@@ -158,7 +155,7 @@ function App() {
                     <Backup />
                   </MainLayout>
                 ) : (
-                  <Navigate to="/" replace />
+                  <Navigate to="/login" replace />
                 )
               } 
             />
